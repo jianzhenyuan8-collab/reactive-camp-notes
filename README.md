@@ -14,6 +14,7 @@ ETHPanda × Reactive Network 两周共学（2026-11-16 → 11-29），对接 [Re
 | 路径 | 用途 |
 |---|---|
 | [`notes/`](notes/) | 每日打卡、踩坑记录、提问草稿 |
+| [`SUBMISSION.md`](SUBMISSION.md) | 第 0 周准备清单的提交材料（钱包地址 / 链上链接 / 截图） |
 | [`AI-CONTEXT.md`](AI-CONTEXT.md) | 让 AI 写 Reactive 代码前的**必读上下文**（旧写法污染严重） |
 | [`scripts/faucet-lreact.ps1`](scripts/faucet-lreact.ps1) | 用 Sepolia ETH 领 Lasna 测试币 lREACT 的脚本 |
 
