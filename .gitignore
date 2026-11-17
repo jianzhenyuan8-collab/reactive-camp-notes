@@ -1,0 +1,20 @@
+# Foundry
+out/
+cache/
+broadcast/
+forge-cache/
+
+# 环境变量与密钥
+.env
+.env.*
+!.env.example
+*.keystore
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
