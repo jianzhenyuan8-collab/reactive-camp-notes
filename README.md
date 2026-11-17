@@ -21,10 +21,10 @@ ETHPanda × Reactive Network 两周共学（2026-11-16 → 11-29），对接 [Re
 
 | 项 | 状态 |
 |---|---|
-| 测试专用钱包 | ⬜ 待建（MetaMask 新账户，不混用主钱包） |
+| 测试专用钱包 | ✅ `0xAFDF23f148BFaA585418F02d1DD120Fd81211C7f`（MetaMask 专用账户） |
 | Foundry | ✅ 1.9.0（`forge` / `cast` / `anvil`，装在 `%USERPROFILE%\.foundry\bin`） |
 | 模板编译 | ✅ `forge build` 通过（33 个文件，Solc 0.8.29） |
-| 测试币 lREACT | ⬜ 待领，见 [`notes/faucet-lreact.md`](notes/faucet-lreact.md) |
+| 测试币 lREACT | ⬜ 待领。⚠️ 文档里的 Sepolia faucet 地址实测是空账户，见 [`notes/faucet-lreact.md`](notes/faucet-lreact.md) |
 | GitHub 学习仓库 | ✅ 就是你正在看的这个 |
 | AI 编程工具 | ✅ 上下文已存为 [`AI-CONTEXT.md`](AI-CONTEXT.md) |
 
