@@ -64,6 +64,36 @@ powershell -ExecutionPolicy Bypass -File .\scripts\faucet-lreact.ps1 -Address 0x
 
 主网没有 ETH 的话，第一个（PoW）是唯一现实路径。
 
+## 4b. faucet 页面报 "IP Blocked / proxy IP range"
+
+报错长这样：
+
+```
+[IPINFO_RESTRICTION] IP Blocked: You're connecting from a hosting IP range.,
+You're connecting from a proxy IP range. Please disable your proxy for this site.
+```
+
+原因是 faucet 用 ipinfo 判来源 IP。本机实测：
+
+| 路径 | 出口 IP | 归属 | 判定 |
+|---|---|---|---|
+| 走代理 `127.0.0.1:7897` | `67.21.76.77` | AS46844 Sharktech（洛杉矶） | ❌ 机房 ASN，被拦 |
+| 直连 | `120.245.63.72` | AS56048 中国移动（北京） | ✅ 住宅 ISP，放行 |
+
+直连可达性实测：
+
+| 站点 | 直连 | 走代理 |
+|---|---|---|
+| sepolia-faucet.pk910.de | ✅ 200 | ✅ 200（但页面会拦） |
+| www.alchemy.com/faucets | ✅ 200 | ✅ 200 |
+| thirdweb.com/base-sepolia-testnet | ✅ 200 | ✅ 200 |
+| faucet.quicknode.com | ✅ 200 | ✅ 200 |
+| cloud.google.com（Google faucet） | ❌ 超时 | ✅ 200 |
+
+**做法**：让 faucet 域名走直连 —— Clash 里加规则 `DOMAIN-SUFFIX,pk910.de,DIRECT` / `DOMAIN-SUFFIX,thirdweb.com,DIRECT`，或临时关掉"系统代理"，领完再开回来。git / GitHub 继续走代理，两者互不影响（git 的代理是它自己的 `http.proxy` 配置）。
+
+自检：关掉代理后 `(Invoke-RestMethod https://ipinfo.io/json).org` 应该显示中国移动，而不是 Sharktech。
+
 ## 5. Lasna 网络参数（加进 MetaMask）
 
 | 字段 | 值 |
