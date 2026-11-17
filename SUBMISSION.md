@@ -1,6 +1,6 @@
 # 第 0 周准备清单 · 提交材料
 
-> 2026-11-17 生成。所有链上数据都是 `cast` 直查的，链接可直接点开核对。
+> 2026-11-17 生成。链上数据均用 `cast` / 浏览器实查，链接可直接点开核对。
 
 ## 1. 测试钱包地址
 
@@ -9,9 +9,8 @@
 ```
 
 - 类型：MetaMask 独立账户（`reactive Camp`），只用于本期，不存任何资产
-- Sepolia：**0.4775 ETH**（pk910 PoW faucet 挖取）
-- Base Sepolia：0（待桥）
-- Lasna：0 lREACT（待领）
+- Sepolia：0.3775 ETH（pk910 PoW faucet 挖取）
+- Lasna：10.5 lREACT
 
 ## 2. lREACT 持有证明（Lasna）
 
@@ -19,8 +18,18 @@
 
 <https://lasna.reactscan.net/address/0xAFDF23f148BFaA585418F02d1DD120Fd81211C7f>
 
-> 状态：**⏳ 待领取**。官方文档给的 Ethereum Sepolia faucet 地址 `0x9b9BB25f…f434` 经 4 个 RPC 交叉验证是空账户（0 字节代码、nonce 0），发进去会丢币；可用的 faucet 在 Base Sepolia（`0x2afa…5967`，1534 字节代码、余额 8.2 ETH），所以要先桥一点 ETH 过去。
-> 详见 [notes/faucet-lreact.md](notes/faucet-lreact.md)。
+余额：**10.5 lREACT**
+
+换取记录（Sepolia 侧）：
+
+| 项 | 值 |
+|---|---|
+| 交易 | [`0xd17405fe…db13`](https://sepolia.etherscan.io/tx/0xd17405fe89d86d579f00df601700bcb7a845746dafd2f0a3d23566343817db13) |
+| 发送 | 0.1 ETH → faucet `0x9b9BB25f…f434`（纯转账，无 calldata） |
+| 到账 | Lasna +10 lREACT，约 1 分钟 |
+
+> 注：该 faucet 地址在多个 RPC 上 `cast code` 返回 0 字节，但实测转账可正常入账；
+> 别用「有没有代码」判断它可用性。详见 [notes/faucet-lreact.md](notes/faucet-lreact.md)。
 
 ## 3. GitHub 学习仓库
 
@@ -44,4 +53,4 @@
 | gh CLI | 2.104.0 | `%LOCALAPPDATA%\gh`（已进 PATH） |
 | Solc | 0.8.29 | Foundry 自动管理 |
 
-环境搭建踩的坑（TLS、子模块、执行策略、faucet 风控）记录在 [notes/D01-2026-11-17.md](notes/D01-2026-11-17.md)。
+环境搭建踩的坑（TLS、子模块、执行策略、faucet 风控与地址）记录在 [notes/D01-2026-11-17.md](notes/D01-2026-11-17.md)。

@@ -1,100 +1,80 @@
 # 领 Lasna 测试币 lREACT
 
-lREACT 是 Reactive Lasna 的**原生币**（付 gas 用）。拿测试网 ETH 换，汇率固定 **1 ETH → 100 lREACT**。
+lREACT 是 Reactive Lasna 的**原生币**（付 gas 用）。拿测试网 ETH 换，汇率 **1 ETH → 100 lREACT**。
 
-> **2026-11-17 实测更新：官方文档里「Ethereum Sepolia」那一行的 faucet 地址是死的，别往那儿发。** 详见下面第 1 节。
+## 1. 实测可用的做法（2026-11-17 验证）
 
-## 1. 先看这个：文档给的 Sepolia 地址是空账户
-
-用 4 个独立 RPC（publicnode / 1rpc / Tenderly / dRPC）交叉验证：
-
-| 地址 | 链 | `cast code` | 余额 | 结论 |
-|---|---|---|---|---|
-| `0x9b9BB25f1A81078C544C829c5EB7822d947Cf434`<br>（文档标"Ethereum Sepolia"） | Sepolia | **0 字节** | 0 ETH | ❌ 空账户，nonce 0 → 发进去直接丢 |
-| `0x9b9BB25f…f434` | Base Sepolia | 0 字节 | 0 | ❌ 同地址也是空的 |
-| `0x2afaFD298b23b62760711756088F75B7409f5967`<br>（文档标"Base Sepolia"） | Base Sepolia | **1534 字节** | **8.2 ETH** | ✅ 这个是活的 |
-| `0x2afa…5967` | Sepolia | 221 字节 | 0 | ⚠️ 有代码但不像 faucet（bytecode 里没有 `request(address)` 选择器） |
-
-对照组（证明工具本身没问题）：Sepolia 上的 Callback Proxy `0xAa14…23b4` = 218 字节、USDC `0x1c7D…7238` = 1793 字节，都能正常读出来。
-
-**所以：文档的 Sepolia 行是过期的/错的，Base Sepolia 行可用。** 共学群里可以顺手报一下，官方文档估计还没改。
-
-## 2. 三条会亏钱的硬约束
-
-1. **单笔不要超过 5 ETH**，超出部分直接丢失，不会多给 lREACT（上限 500 lREACT）
-2. 发之前**一定先 `cast code` 确认那地址有代码**（见上，文档就可能给你个空地址）
-3. 用**专用测试钱包**发，别用主钱包
-
-## 3. 推荐路径
-
-### 路径 A：走 Base Sepolia（目前唯一实测可用的 faucet 合约）
+**往 Sepolia 的 faucet 地址发一笔纯 ETH 转账就行，不要带 calldata、不要调 `request(address)`。**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\faucet-lreact.ps1 -Source base-sepolia -Address 0x你的地址
+$env:ETHEREUM_SEPOLIA_PRIVATE_KEY = '0x你的私钥'
+powershell -ExecutionPolicy Bypass -File .\scripts\faucet-lreact.ps1 -Address 0x你的地址 -AmountEth 0.1
 ```
 
-需要先有 **Base Sepolia 的 ETH**：<https://www.alchemy.com/faucets/base-sepolia>（一般要求主网有 0.001 ETH）或 <https://portal.cdp.coinbase.com/products/faucet>。
-
-### 路径 B：ReacDEFI 前端兑换
-
-<https://reacdefi.app/markets#testnet-faucet> —— 官方前端，连钱包按想要的 lREACT 数量反推 ETH。地址由前端处理，比自己抄地址安全。
-
-### 路径 C：群里问现地址
-
-文档与实际不符属于正常现象（这个仓库的速查表也写了「官方资料有几处前后矛盾」）。最省事的办法就是在共学群里问一句当前 faucet 地址。
-
-### 路径 D：脚本走 Sepolia（**只有在该地址重新部署可用时才用**）
+等价的手工命令：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\faucet-lreact.ps1 -Address 0x你的地址
+cast send 0x9b9BB25f1A81078C544C829c5EB7822d947Cf434 `
+  --value 0.1ether `
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com `
+  --private-key $env:ETHEREUM_SEPOLIA_PRIVATE_KEY
 ```
 
-脚本会先 `cast code` 自检，发现地址没代码会直接停，不会把币发出去。
+实测记录：
 
-## 4. 怎么先搞到测试网 ETH
-
-你现在的地址在 Sepolia 和 Base Sepolia 都是 **0**，所以第一步是领测试 ETH：
-
-| 渠道 | 门槛 |
+| 项 | 值 |
 |---|---|
-| <https://sepolia-faucet.pk910.de/> | **无门槛**，浏览器里 PoW 挖几分钟就给，0 主网余额也能领 |
-| <https://cloud.google.com/application/web3/faucet/ethereum/sepolia> | 需主网 ≥0.001 ETH 或主网有活动 |
-| <https://www.alchemy.com/faucets/ethereum-sepolia> | 需主网 ≥0.001 ETH |
-| <https://faucet.quicknode.com/ethereum/sepolia> | 需主网 ≥0.001 ETH |
+| 交易 | [`0xd17405fe…db13`](https://sepolia.etherscan.io/tx/0xd17405fe89d86d579f00df601700bcb7a845746dafd2f0a3d23566343817db13) |
+| 发送 | 0.1 ETH，`raw_input = 0x`（纯转账，没掉函数） |
+| 结果 | `status = 0x1`，faucet 发出 1 个事件 |
+| 到账 | Lasna 上 **10.5 lREACT**（约 1 分钟） |
 
-主网没有 ETH 的话，第一个（PoW）是唯一现实路径。
+## 2. 踩过的坑：不要用「有没有代码」判断这个地址
 
-## 4b. faucet 页面报 "IP Blocked / proxy IP range"
+`cast code 0x9b9BB25f…f434` 在 publicnode / 1rpc / Tenderly 上都返回 `0x`（0 字节），
+而这笔交易明明成功、事件也发了。同一个地址 [Blockscout](https://eth-sepolia.blockscout.com/address/0x9b9BB25f1A81078C544C829c5EB7822d947Cf434) 却把它标成合约 `ReactiveFaucetL1`、余额 210 ETH。
 
-报错长这样：
+结论：**RPC 与浏览器对这个地址的呈现不一致，谁都别全信**。判断能不能用，看实际到账，不看 `cast code`。
+（第一版脚本拿 `cast code` 做中止条件，会把这个可用的 faucet 误判成死地址，已改掉。）
 
-```
-[IPINFO_RESTRICTION] IP Blocked: You're connecting from a hosting IP range.,
-You're connecting from a proxy IP range. Please disable your proxy for this site.
-```
+## 3. 三条会亏钱的约束
 
-原因是 faucet 用 ipinfo 判来源 IP。本机实测：
+1. **单笔不要超过 5 ETH**，超出部分直接丢失（上限 500 lREACT）
+2. 只往脚本内置的官方地址发，别自己从文档/群里抄地址（地址存在多版本）
+3. 用**专用测试钱包**
 
-| 路径 | 出口 IP | 归属 | 判定 |
-|---|---|---|---|
-| 走代理 `127.0.0.1:7897` | `67.21.76.77` | AS46844 Sharktech（洛杉矶） | ❌ 机房 ASN，被拦 |
-| 直连 | `120.245.63.72` | AS56048 中国移动（北京） | ✅ 住宅 ISP，放行 |
+## 4. Faucet 地址
 
-直连可达性实测：
-
-| 站点 | 直连 | 走代理 |
+| 来源链 | Faucet 合约 | 备注 |
 |---|---|---|
-| sepolia-faucet.pk910.de | ✅ 200 | ✅ 200（但页面会拦） |
-| www.alchemy.com/faucets | ✅ 200 | ✅ 200 |
-| thirdweb.com/base-sepolia-testnet | ✅ 200 | ✅ 200 |
-| faucet.quicknode.com | ✅ 200 | ✅ 200 |
-| cloud.google.com（Google faucet） | ❌ 超时 | ✅ 200 |
+| Ethereum Sepolia | `0x9b9BB25f1A81078C544C829c5EB7822d947Cf434` | ✅ 实测可用（纯转账） |
+| Base Sepolia | `0x2afaFD298b23b62760711756088F75B7409f5967` | 有代码（1534 字节）、余额 8.2 ETH，备用 |
 
-**做法**：让 faucet 域名走直连 —— Clash 里加规则 `DOMAIN-SUFFIX,pk910.de,DIRECT` / `DOMAIN-SUFFIX,thirdweb.com,DIRECT`，或临时关掉"系统代理"，领完再开回来。git / GitHub 继续走代理，两者互不影响（git 的代理是它自己的 `http.proxy` 配置）。
+共学统一用 **Sepolia ↔ Lasna ↔ Sepolia**，所以用第一个就行，不用桥到 Base。
 
-自检：关掉代理后 `(Invoke-RestMethod https://ipinfo.io/json).org` 应该显示中国移动，而不是 Sharktech。
+## 5. 先搞到测试网 ETH
 
-## 5. Lasna 网络参数（加进 MetaMask）
+本机已验证可行的渠道：
+
+| 渠道 | 门槛 | 结果 |
+|---|---|---|
+| <https://sepolia-faucet.pk910.de/> | 无（浏览器 PoW 挖矿） | ✅ 挖到 0.4775 SepETH |
+| <https://www.alchemy.com/faucets/ethereum-sepolia> | 需主网 ≥0.001 ETH | 未试 |
+| <https://cloud.google.com/application/web3/faucet/ethereum/sepolia> | 需主网余额，且国内直连超时 | 不可用 |
+
+### 如果页面报 IP 被封
+
+```
+[IPINFO_RESTRICTION] IP Blocked: You're connecting from a hosting IP range...
+```
+
+本机实测：走代理出口是 `67.21.76.77`（AS46844 Sharktech，机房），被 ipinfo 判为 hosting；
+直连出口是 `120.245.63.72`（AS56048 中国移动，住宅）——放行。
+
+做法：**整个关掉系统代理**（不要只加单域名规则，否则页面和提交请求出口不一致，captcha 还会报 `invalid token`），
+领完再开回来。git 用自己独立的 `http.proxy` 配置，不受影响。
+
+## 6. Lasna 网络参数（加进 MetaMask）
 
 | 字段 | 值 |
 |---|---|
@@ -104,17 +84,14 @@ You're connecting from a proxy IP range. Please disable your proxy for this site
 | 货币符号 | `lREACT` |
 | 浏览器 | <https://lasna.reactscan.net/> |
 
-> MetaMask 的 **Smart Transactions** 建议关掉，否则 faucet / 跨链交易可能"消失"。
+> MetaMask 的 **Smart Transactions** 建议关掉。
 
-## 6. 到账后自检
+## 7. 到账自检
 
 ```powershell
 cast balance 0x你的地址 --rpc-url https://lasna-rpc.rnk.dev/ --ether
 ```
 
-能返回非 0 的数就说明到了。约 1 分钟延迟。
-
 ## 参考
 
-- <https://dev.reactive.network/reactive-mainnet>（faucet 地址就是这里有误）
-- <https://reacdefi.app/markets#testnet-faucet>
+- <https://dev.reactive.network/reactive-mainnet>
