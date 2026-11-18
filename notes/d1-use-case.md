@@ -83,6 +83,10 @@ value >= 0.001 ETH
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+## 当前版本注意事项
+
+官方仓库当前的 Basic Demo 源码仍使用旧版 `service.subscribe`、`vmOnly` 和 `emit Callback`。本卡保留其案例逻辑，但如果真正部署到当前 Omni 网络，应改用 `SYSTEM.subscribe`、`react() external onlySystem` 和 `SYSTEM.requestCallbackV_1_0`，并重新核对 Callback Proxy 与权限。
+
 ## 参考
 
 - [Reactive Network Basic Demo（本次课程材料）](https://github.com/Reactive-Network/reactive-smart-contract-demos/tree/main/src/demos/basic)
