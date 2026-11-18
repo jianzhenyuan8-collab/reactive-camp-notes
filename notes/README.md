@@ -38,3 +38,4 @@ D<天>-<日期>.md      例：D01-2026-11-17.md
 ## 专项案例卡
 
 - [D1 · Reactive 官方 10 个 Demo 案例卡索引](d1-demo-cards.md)
+- [D1 · Reactive 费用、余额与欠费机制](d1-economy.md)
